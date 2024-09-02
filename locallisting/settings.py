@@ -60,7 +60,51 @@ REST_FRAMEWORK = {
 # Custom user model
 AUTH_USER_MODEL = 'users.CustomUser'
 
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = False  # Set to True only for development if needed
+
+if os.environ.get('DEVELOPMENT') == 'True':
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "https://production-domain.com",
+    ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# CSRF protection with session authentication
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# Session settings (session-based authentication)
+SESSION_COOKIE_SECURE = os.environ.get('DJANGO_ENV') == 'production'
+SESSION_COOKIE_SAMESITE = 'Lax'  # or 'None' for cross-site cookies
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # This should be at the top
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
