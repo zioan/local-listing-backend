@@ -7,6 +7,7 @@ from .serializers import (
     SubcategorySerializer,
     ListingSerializer
 )
+from cloudinary import uploader
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -75,23 +76,45 @@ class ListingDetail(generics.RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
 
         # Handle image updates
-        existing_image_ids = request.data.getlist('existing_images')
-        new_images = request.FILES.getlist('new_images')
-
-        # Remove images not in existing_image_ids
-        instance.images.exclude(id__in=existing_image_ids).delete()
-
-        # Add new images
-        for image in new_images:
-            ListingImage.objects.create(listing=instance, image=image)
+        self._handle_image_updates(instance, request.data)
 
         if getattr(instance, '_prefetched_objects_cache', None):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
 
-    def perform_update(self, serializer):
-        serializer.save()
+    def _handle_image_updates(self, instance, data):
+        existing_image_ids = data.getlist('existing_images')
+        new_images = data.getlist('new_images')
+
+        # Remove images not in existing_image_ids
+        images_to_delete = instance.images.exclude(id__in=existing_image_ids)
+        for image in images_to_delete:
+            self._delete_image(image)
+
+        # Add new images
+        for image in new_images:
+            ListingImage.objects.create(listing=instance, image=image)
+
+    def _delete_image(self, image):
+        try:
+            uploader.destroy(image.image.public_id)
+        except Exception as e:
+            print(f"Error deleting image from Cloudinary: {e}")
+        image.delete()
+
+    def perform_destroy(self, instance):
+        # Delete all associated images
+        for image in instance.images.all():
+            self._delete_image(image)
+        # Delete the listing
+        instance.delete()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"detail": "Listing successfully deleted."},
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 class MyListingsView(generics.ListAPIView):
