@@ -41,5 +41,8 @@ class ListingSerializer(serializers.ModelSerializer):
 
         for image_data in images_data.values():
             ListingImage.objects.create(listing=listing, image=image_data)
-
         return listing
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        return instance
