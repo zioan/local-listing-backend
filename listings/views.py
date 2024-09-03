@@ -74,9 +74,16 @@ class ListingDetail(generics.RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        if 'images' in request.FILES:
-            for image in request.FILES.getlist('images'):
-                ListingImage.objects.create(listing=instance, image=image)
+        # Handle image updates
+        existing_image_ids = request.data.getlist('existing_images')
+        new_images = request.FILES.getlist('new_images')
+
+        # Remove images not in existing_image_ids
+        instance.images.exclude(id__in=existing_image_ids).delete()
+
+        # Add new images
+        for image in new_images:
+            ListingImage.objects.create(listing=instance, image=image)
 
         if getattr(instance, '_prefetched_objects_cache', None):
             instance._prefetched_objects_cache = {}
