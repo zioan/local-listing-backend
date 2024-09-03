@@ -24,4 +24,5 @@ urlpatterns = [
          views.ListingFavorite.as_view(), name='listing-favorite'),
     path('listings/<int:pk>/unfavorite/',
          views.ListingUnfavorite.as_view(), name='listing-unfavorite'),
+    path('my-listings/', views.MyListingsView.as_view(), name='my-listings'),
 ]
