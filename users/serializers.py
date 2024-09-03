@@ -41,6 +41,7 @@ class UserLoginSerializer(serializers.Serializer):
         user = authenticate(email=data['email'], password=data['password'])
         if not user:
             raise serializers.ValidationError("Invalid email or password.")
+        data['user'] = user
         return data
 
 

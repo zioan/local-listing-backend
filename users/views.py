@@ -1,12 +1,13 @@
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from rest_framework.authentication import TokenAuthentication
-from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 from .serializers import (
-    UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
+    UserRegistrationSerializer,
+    UserProfileSerializer,
+    UserLoginSerializer
 )
 
 
@@ -17,34 +18,25 @@ class UserRegistrationView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        token, created = Token.objects.get_or_create(user=user)
+        refresh = RefreshToken.for_user(user)
         return Response({
             "user": UserProfileSerializer(user).data,
-            "token": token.key
+            "refresh": str(refresh),
+            "access": str(refresh.access_token)
         }, status=status.HTTP_201_CREATED)
 
 
-class UserLoginView(generics.GenericAPIView):
-    serializer_class = UserLoginSerializer
-
+class UserLoginView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            user = authenticate(
-                request,
-                email=serializer.validated_data['email'],
-                password=serializer.validated_data['password']
-            )
-            if user:
-                token, created = Token.objects.get_or_create(user=user)
-                return Response({
-                    "user": UserProfileSerializer(user).data,
-                    "token": token.key
-                })
-        return Response(
-            {"error": "Invalid credentials"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        serializer = UserLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "user": UserProfileSerializer(user).data,
+            "refresh": str(refresh),
+            "access": str(refresh.access_token)
+        }, status=status.HTTP_200_OK)
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -56,12 +48,30 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
 
 class UserLogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        request.user.auth_token.delete()
-        return Response(
-            {"message": "Successfully logged out."},
-            status=status.HTTP_200_OK
-        )
+        try:
+            refresh_token = request.data.get("refresh_token")
+            if not refresh_token:
+                return Response(
+                    {"error": "Refresh token is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(
+                {"success": "User logged out successfully"},
+                status=status.HTTP_200_OK
+            )
+        except TokenError as e:
+            return Response(
+                {"error": f"Invalid token: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"An unexpected error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
