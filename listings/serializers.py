@@ -25,6 +25,7 @@ class ListingSerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source='category.name')
     subcategory_name = serializers.ReadOnlyField(source='subcategory.name')
     user = serializers.ReadOnlyField(source='user.username')
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
@@ -32,8 +33,15 @@ class ListingSerializer(serializers.ModelSerializer):
                   'condition', 'category', 'category_name', 'subcategory',
                   'subcategory_name', 'delivery_option', 'user', 'created_at',
                   'updated_at', 'is_active', 'view_count', 'favorite_count',
-                  'images']
-        read_only_fields = ['user', 'view_count', 'favorite_count']
+                  'images', 'is_favorited']
+        read_only_fields = ['user', 'view_count',
+                            'favorite_count', 'is_favorited']
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.favorited_by.filter(id=request.user.id).exists()
+        return False
 
     def create(self, validated_data):
         images_data = self.context.get('view').request.FILES

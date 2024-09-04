@@ -71,6 +71,16 @@ class Listing(models.Model):
     view_count = models.PositiveIntegerField(default=0)
     favorite_count = models.PositiveIntegerField(default=0)
 
+    favorited_by = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='favorite_listings',
+        blank=True
+    )
+
+    def update_favorite_count(self):
+        self.favorite_count = self.favorited_by.count()
+        self.save()
+
     def __str__(self):
         return self.title
 

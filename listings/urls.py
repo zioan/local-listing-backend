@@ -20,9 +20,10 @@ urlpatterns = [
     path('listings/', views.ListingList.as_view(), name='listing-list'),
     path('listings/<int:pk>/', views.ListingDetail.as_view(),
          name='listing-detail'),
-    path('listings/<int:pk>/favorite/',
-         views.ListingFavorite.as_view(), name='listing-favorite'),
-    path('listings/<int:pk>/unfavorite/',
-         views.ListingUnfavorite.as_view(), name='listing-unfavorite'),
     path('my-listings/', views.MyListingsView.as_view(), name='my-listings'),
+
+    # Favorite Listings URLs
+    path('favorites/', views.FavoriteListView.as_view(), name='favorite-list'),
+    path('listings/<int:pk>/favorite/',
+         views.FavoriteToggleView.as_view(), name='favorite-toggle'),
 ]

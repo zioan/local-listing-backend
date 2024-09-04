@@ -50,6 +50,11 @@ class ListingList(generics.ListCreateAPIView):
     serializer_class = ListingSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -125,24 +130,36 @@ class MyListingsView(generics.ListAPIView):
         return Listing.objects.filter(user=self.request.user)
 
 
-class ListingFavorite(APIView):
+class FavoriteListView(generics.ListAPIView):
+    serializer_class = ListingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.favorite_listings.all()
+
+
+class FavoriteToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        listing = generics.get_object_or_404(Listing, pk=pk)
-        listing.favorite_count += 1
-        listing.save()
-        return Response({'status': 'listing favorited'},
-                        status=status.HTTP_200_OK)
+        try:
+            listing = Listing.objects.get(pk=pk)
+        except Listing.DoesNotExist:
+            return Response({"detail": "Listing not found."},
+                            status=status.HTTP_404_NOT_FOUND)
 
+        user = request.user
+        if user in listing.favorited_by.all():
+            listing.favorited_by.remove(user)
+            action = 'unfavorited'
+        else:
+            listing.favorited_by.add(user)
+            action = 'favorited'
 
-class ListingUnfavorite(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+        listing.update_favorite_count()
 
-    def post(self, request, pk):
-        listing = generics.get_object_or_404(Listing, pk=pk)
-        if listing.favorite_count > 0:
-            listing.favorite_count -= 1
-            listing.save()
-        return Response({'status': 'listing unfavorited'},
-                        status=status.HTTP_200_OK)
+        serializer = ListingSerializer(listing, context={'request': request})
+        return Response({
+            "action": action,
+            "listing": serializer.data
+        }, status=status.HTTP_200_OK)
