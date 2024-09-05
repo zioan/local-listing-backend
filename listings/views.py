@@ -1,6 +1,8 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from django_filters import rest_framework as filters
 from .models import Category, Subcategory, Listing, ListingImage
 from .serializers import (
     CategorySerializer,
@@ -15,6 +17,43 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.user == request.user
+
+
+class ListingPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class ListingFilter(filters.FilterSet):
+    min_price = filters.NumberFilter(field_name="price", lookup_expr='gte')
+    max_price = filters.NumberFilter(field_name="price", lookup_expr='lte')
+    category = filters.NumberFilter(field_name="category__id")
+
+    class Meta:
+        model = Listing
+        fields = ['min_price', 'max_price', 'category', 'condition']
+
+
+class ListingViewSet(viewsets.ModelViewSet):
+    queryset = Listing.objects.all().order_by('-created_at')
+    serializer_class = ListingSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    pagination_class = ListingPagination
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = ListingFilter
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action == 'list':
+            queryset = queryset.select_related(
+                'user', 'category', 'subcategory')
+            queryset = queryset.prefetch_related('images')
+        return queryset
 
 
 class CategoryList(generics.ListAPIView):
