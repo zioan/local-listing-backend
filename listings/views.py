@@ -29,10 +29,14 @@ class ListingFilter(filters.FilterSet):
     min_price = filters.NumberFilter(field_name="price", lookup_expr='gte')
     max_price = filters.NumberFilter(field_name="price", lookup_expr='lte')
     category = filters.NumberFilter(field_name="category__id")
+    subcategory = filters.NumberFilter(field_name="subcategory__id")
+    condition = filters.CharFilter(field_name="condition")
+    delivery_option = filters.CharFilter(field_name="delivery_option")
 
     class Meta:
         model = Listing
-        fields = ['min_price', 'max_price', 'category', 'condition']
+        fields = ['min_price', 'max_price', 'category',
+                  'subcategory', 'condition', 'delivery_option']
 
 
 class ListingViewSet(viewsets.ModelViewSet):
