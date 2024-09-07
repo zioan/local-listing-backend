@@ -3,15 +3,11 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register(r'', views.ListingViewSet)
+router.register(r'listings', views.ListingViewSet)
 
 urlpatterns = [
-    # Custom detail view to increment view count
-    path('listings/<int:pk>/', views.ListingDetail.as_view(),
-         name='listing-detail'),
-
     # Router URLs (for ListingViewSet)
-    path('listings/', include(router.urls)),
+    path('', include(router.urls)),
 
     # Category URLs
     path('categories/', views.CategoryList.as_view(), name='category-list'),
