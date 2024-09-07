@@ -102,6 +102,13 @@ class ListingViewSet(viewsets.ModelViewSet):
         # Delete the listing
         instance.delete()
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.view_count += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
 
 class CategoryList(generics.ListAPIView):
     queryset = Category.objects.all()
@@ -143,20 +150,6 @@ class ListingList(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-
-class ListingDetail(generics.RetrieveAPIView):
-    queryset = Listing.objects.all()
-    serializer_class = ListingSerializer
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.view_count += 1
-        instance.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
 
 
 class MyListingsView(generics.ListAPIView):
