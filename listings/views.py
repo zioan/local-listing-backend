@@ -59,62 +59,6 @@ class ListingViewSet(viewsets.ModelViewSet):
             queryset = queryset.prefetch_related('images')
         return queryset
 
-
-class CategoryList(generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-class CategoryDetail(generics.RetrieveAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-class SubcategoryList(generics.ListAPIView):
-    queryset = Subcategory.objects.all()
-    serializer_class = SubcategorySerializer
-
-
-class SubcategoryDetail(generics.RetrieveAPIView):
-    queryset = Subcategory.objects.all()
-    serializer_class = SubcategorySerializer
-
-
-class SubcategoryByCategory(generics.ListAPIView):
-    serializer_class = SubcategorySerializer
-
-    def get_queryset(self):
-        category_id = self.kwargs['category_id']
-        return Subcategory.objects.filter(category_id=category_id)
-
-
-class ListingList(generics.ListCreateAPIView):
-    queryset = Listing.objects.all()
-    serializer_class = ListingSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-
-class ListingDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Listing.objects.all()
-    serializer_class = ListingSerializer
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.view_count += 1
-        instance.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -158,11 +102,61 @@ class ListingDetail(generics.RetrieveUpdateDestroyAPIView):
         # Delete the listing
         instance.delete()
 
-    def destroy(self, request, *args, **kwargs):
+
+class CategoryList(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class CategoryDetail(generics.RetrieveAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class SubcategoryList(generics.ListAPIView):
+    queryset = Subcategory.objects.all()
+    serializer_class = SubcategorySerializer
+
+
+class SubcategoryDetail(generics.RetrieveAPIView):
+    queryset = Subcategory.objects.all()
+    serializer_class = SubcategorySerializer
+
+
+class SubcategoryByCategory(generics.ListAPIView):
+    serializer_class = SubcategorySerializer
+
+    def get_queryset(self):
+        category_id = self.kwargs['category_id']
+        return Subcategory.objects.filter(category_id=category_id)
+
+
+class ListingList(generics.ListCreateAPIView):
+    queryset = Listing.objects.all()
+    serializer_class = ListingSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ListingDetail(generics.RetrieveAPIView):
+    queryset = Listing.objects.all()
+    serializer_class = ListingSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response({"detail": "Listing successfully deleted."},
-                        status=status.HTTP_204_NO_CONTENT)
+        instance.view_count += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class MyListingsView(generics.ListAPIView):
