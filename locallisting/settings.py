@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "cloudinary",
     "users",
     "listings",
+    "profiles",
 ]
 
 # JWT settings and filters
