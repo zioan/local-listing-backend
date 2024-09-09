@@ -1,8 +1,9 @@
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import (generics, permissions, status,
+                            viewsets, filters as drf_filters)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from django_filters import rest_framework as filters
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Category, Subcategory, Listing, ListingImage
 from .serializers import (
     CategorySerializer,
@@ -10,6 +11,7 @@ from .serializers import (
     ListingSerializer
 )
 from cloudinary import uploader
+from .filters import ListingFilter
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -25,28 +27,17 @@ class ListingPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class ListingFilter(filters.FilterSet):
-    min_price = filters.NumberFilter(field_name="price", lookup_expr='gte')
-    max_price = filters.NumberFilter(field_name="price", lookup_expr='lte')
-    category = filters.NumberFilter(field_name="category__id")
-    subcategory = filters.NumberFilter(field_name="subcategory__id")
-    condition = filters.CharFilter(field_name="condition")
-    delivery_option = filters.CharFilter(field_name="delivery_option")
-
-    class Meta:
-        model = Listing
-        fields = ['min_price', 'max_price', 'category',
-                  'subcategory', 'condition', 'delivery_option']
-
-
 class ListingViewSet(viewsets.ModelViewSet):
     queryset = Listing.objects.all().order_by('-created_at')
     serializer_class = ListingSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     pagination_class = ListingPagination
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,
+                       drf_filters.SearchFilter, drf_filters.OrderingFilter)
     filterset_class = ListingFilter
+    search_fields = ['title', 'description', 'location']
+    ordering_fields = ['price', 'created_at', 'view_count', 'favorite_count']
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
