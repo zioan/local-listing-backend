@@ -41,6 +41,7 @@ class ListingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        self.request.user.profile.update_listing_counts()
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -64,6 +65,7 @@ class ListingViewSet(viewsets.ModelViewSet):
         if getattr(instance, '_prefetched_objects_cache', None):
             instance._prefetched_objects_cache = {}
 
+        instance.user.profile.update_listing_counts()
         return Response(serializer.data)
 
     def _handle_image_updates(self, instance, data):
@@ -92,6 +94,7 @@ class ListingViewSet(viewsets.ModelViewSet):
             self._delete_image(image)
         # Delete the listing
         instance.delete()
+        instance.user.profile.update_listing_counts()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
