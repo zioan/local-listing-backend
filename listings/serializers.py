@@ -52,11 +52,11 @@ class ListingSerializer(serializers.ModelSerializer):
         event_date = data.get('event_date')
 
         if listing_type in ['item_sale', 'service', 'job', 'housing']:
-            if not price and price_type != 'contact':
+            if not price and price_type not in ['contact', 'na']:
                 raise serializers.ValidationError({
                     'price': (
-                        "Price is required for this listing type "
-                        "unless 'Contact for Price' is selected."
+                        "Price is required for this listing type unless "
+                        "'Contact for Price'or 'Not Applicable' is selected."
                     )
                 })
 

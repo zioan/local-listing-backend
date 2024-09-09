@@ -40,6 +40,7 @@ class Listing(models.Model):
         ('good', 'Good'),
         ('fair', 'Fair'),
         ('poor', 'Poor'),
+        ('na', 'Not Applicable'),
     ]
 
     PRICE_TYPE_CHOICES = [
@@ -47,6 +48,7 @@ class Listing(models.Model):
         ('negotiable', 'Negotiable'),
         ('free', 'Free'),
         ('contact', 'Contact for Price'),
+        ('na', 'Not Applicable'),
     ]
 
     DELIVERY_CHOICES = [
