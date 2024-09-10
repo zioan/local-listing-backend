@@ -33,8 +33,8 @@ class ListingSerializer(serializers.ModelSerializer):
                   'category', 'category_name', 'subcategory',
                   'subcategory_name', 'price', 'price_type', 'condition',
                   'delivery_option', 'location', 'event_date', 'created_at',
-                  'updated_at', 'is_active', 'view_count', 'favorite_count',
-                  'images', 'is_favorited']
+                  'updated_at', 'is_active', 'status', 'view_count',
+                  'favorite_count', 'images', 'is_favorited']
         read_only_fields = ['user', 'view_count',
                             'favorite_count', 'is_favorited']
 

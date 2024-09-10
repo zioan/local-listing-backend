@@ -58,6 +58,15 @@ class Listing(models.Model):
         ('na', 'Not Applicable'),
     ]
 
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('active', 'Active'),
+        ('pending', 'Pending'),
+        ('sold', 'Sold'),
+        ('expired', 'Expired'),
+        ('cancelled', 'Cancelled'),
+    ]
+
     title = models.CharField(max_length=200)
     description = models.TextField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -94,12 +103,18 @@ class Listing(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='active')
     view_count = models.PositiveIntegerField(default=0)
     favorite_count = models.PositiveIntegerField(default=0)
     favorited_by = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name='favorite_listings',
         blank=True)
+
+    def save(self, *args, **kwargs):
+        self.is_active = self.status == 'active'
+        super().save(*args, **kwargs)
 
     def update_favorite_count(self):
         self.favorite_count = self.favorited_by.count()

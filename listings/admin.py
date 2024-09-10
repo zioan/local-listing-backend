@@ -51,7 +51,7 @@ class ListingAdmin(admin.ModelAdmin):
     inlines = [ListingImageInline]
     fieldsets = (
         (None, {
-            'fields': ('title', 'description', 'user')
+            'fields': ('title', 'description', 'user', 'status')
         }),
         ('Category Information', {
             'fields': ('category', 'subcategory')

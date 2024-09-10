@@ -40,7 +40,7 @@ class ListingViewSet(viewsets.ModelViewSet):
     ordering_fields = ['price', 'created_at', 'view_count', 'favorite_count']
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, is_active=True)
+        serializer.save(user=self.request.user, status='active')
         self.request.user.profile.update_listing_counts()
 
     def get_queryset(self):
