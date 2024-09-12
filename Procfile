@@ -1,0 +1,1 @@
+web: gunicorn locallisting.wsgi --log-file -
