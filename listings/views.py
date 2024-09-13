@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import (generics, permissions, status,
                             viewsets, filters as drf_filters)
 from rest_framework.views import APIView
@@ -36,7 +37,8 @@ class ListingViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,
                        drf_filters.SearchFilter, drf_filters.OrderingFilter)
     filterset_class = ListingFilter
-    search_fields = ['title', 'description', 'location']
+    search_fields = ['title', 'description',
+                     'category__name', 'subcategory__name']
     ordering_fields = ['price', 'created_at', 'view_count', 'favorite_count']
 
     def perform_create(self, serializer):
@@ -45,6 +47,14 @@ class ListingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        search_term = self.request.query_params.get('search', None)
+        if search_term:
+            queryset = queryset.filter(
+                Q(title__icontains=search_term) |
+                Q(description__icontains=search_term) |
+                Q(category__name__icontains=search_term) |
+                Q(subcategory__name__icontains=search_term)
+            )
         if self.action == 'list':
             queryset = queryset.select_related(
                 'user', 'category', 'subcategory')
