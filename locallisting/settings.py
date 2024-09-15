@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "users",
     "listings",
     "profiles",
+    "messaging",
 ]
 
 # JWT settings and filters
