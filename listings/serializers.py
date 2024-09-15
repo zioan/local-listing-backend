@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Category, Subcategory, Listing, ListingImage
+from messaging.models import Conversation
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -26,6 +27,7 @@ class ListingSerializer(serializers.ModelSerializer):
     subcategory_name = serializers.ReadOnlyField(source='subcategory.name')
     user = serializers.ReadOnlyField(source='user.username')
     is_favorited = serializers.SerializerMethodField()
+    has_conversation = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
@@ -34,7 +36,8 @@ class ListingSerializer(serializers.ModelSerializer):
                   'subcategory_name', 'price', 'price_type', 'condition',
                   'delivery_option', 'location', 'event_date', 'created_at',
                   'updated_at', 'is_active', 'status', 'view_count',
-                  'favorite_count', 'images', 'is_favorited']
+                  'favorite_count', 'images', 'is_favorited',
+                  'has_conversation']
         read_only_fields = ['user', 'view_count',
                             'favorite_count', 'is_favorited']
 
@@ -42,6 +45,15 @@ class ListingSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return obj.favorited_by.filter(id=request.user.id).exists()
+        return False
+
+    def get_has_conversation(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return Conversation.objects.filter(
+                listing=obj,
+                participants=request.user
+            ).exists()
         return False
 
     def validate(self, data):
