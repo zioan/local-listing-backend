@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -7,11 +7,9 @@ from .models import Conversation, Message
 from .serializers import (
     ConversationSerializer,
     ConversationDetailSerializer,
-    MessageSerializer)
+    MessageSerializer
+)
 from listings.models import Listing
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class ConversationListCreate(generics.ListCreateAPIView):
@@ -21,7 +19,6 @@ class ConversationListCreate(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         listing_id = self.request.query_params.get('listing', None)
-
         if listing_id:
             listing = get_object_or_404(Listing, pk=listing_id)
             return Conversation.objects.filter(listing=listing,
@@ -35,27 +32,22 @@ class ConversationListCreate(generics.ListCreateAPIView):
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
         except Exception as e:
-            logger.error(f"Error in ConversationListCreate.list: {str(e)}")
-            return Response({"error": "Wrror occurred while fetching conversations."},
+            return Response({"error": str(e)},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @transaction.atomic
     def perform_create(self, serializer):
         listing_id = serializer.validated_data['listing_id']
         listing = get_object_or_404(Listing, pk=listing_id)
-
         if self.request.user == listing.user:
             raise serializers.ValidationError(
                 "Cannot start a conversation with yourself")
-
         existing_conversation = Conversation.objects.filter(
             participants=self.request.user,
             listing=listing
         ).first()
-
         if existing_conversation:
             return existing_conversation
-
         conversation = serializer.save(listing=listing)
         conversation.participants.add(self.request.user, listing.user)
         return conversation
@@ -66,7 +58,6 @@ class ConversationListCreate(generics.ListCreateAPIView):
             if not serializer.is_valid():
                 return Response(serializer.errors,
                                 status=status.HTTP_400_BAD_REQUEST)
-
             conversation = self.perform_create(serializer)
             serializer = self.get_serializer(conversation)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -77,8 +68,7 @@ class ConversationListCreate(generics.ListCreateAPIView):
             return Response({"error": "Listing not found"},
                             status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.error(f"Error in ConversationListCreate.create: {str(e)}")
-            return Response({"error": "Error occurred while creating the conversation."},
+            return Response({"error": str(e)},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -119,13 +109,9 @@ class ListingIncomingMessages(generics.ListAPIView):
         listing_id = self.kwargs['listing_id']
         listing = get_object_or_404(Listing, pk=listing_id)
         user = self.request.user
-
-        # Check if the user is either the listing owner or a participant in a conversation for this listing
         if user == listing.user:
-            # If the user is the listing owner, return all conversations for this listing
             return Conversation.objects.filter(listing=listing)
         else:
-            # If the user is a potential buyer, return only their conversations for this listing
             return Conversation.objects.filter(listing=listing,
                                                participants=user)
 
@@ -134,9 +120,11 @@ class ListingIncomingMessages(generics.ListAPIView):
             queryset = self.get_queryset()
             if not queryset.exists():
                 if Listing.objects.filter(pk=self.kwargs['listing_id']).exists():
-                    return Response({"message": "No conversations found for this listing."}, status=status.HTTP_200_OK)
+                    return Response({"message": "No conversations found."},
+                                    status=status.HTTP_200_OK)
                 else:
-                    return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+                    return Response({"error": "Listing not found."},
+                                    status=status.HTTP_404_NOT_FOUND)
 
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
@@ -144,8 +132,7 @@ class ListingIncomingMessages(generics.ListAPIView):
             return Response({"error": str(e)},
                             status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
-            logger.error(f"Error in ListingIncomingMessages: {str(e)}")
-            return Response({"error": "An unexpected error occurred."},
+            return Response({"error": f"Unexpected error occurred.{str(e)}"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -158,3 +145,22 @@ class UnreadMessageCount(generics.GenericAPIView):
             is_read=False
         ).exclude(sender=request.user).count()
         return Response({'unread_count': unread_count})
+
+
+class MarkMessagesAsRead(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, conversation_id):
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+        if request.user not in conversation.participants.all():
+            raise PermissionDenied(
+                "You are not a participant in this conversation.")
+        message_ids = request.data.get('message_ids', [])
+        messages = Message.objects.filter(
+            id__in=message_ids,
+            conversation=conversation,
+            is_read=False
+        ).exclude(sender=request.user)
+        messages.update(is_read=True)
+        return Response({"status": "Messages marked as read"},
+                        status=status.HTTP_200_OK)
