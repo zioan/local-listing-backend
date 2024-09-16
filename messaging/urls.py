@@ -8,4 +8,7 @@ urlpatterns = [
          views.MessageListCreate.as_view(), name='message-list-create'),
     path('unread-messages/', views.UnreadMessageCount.as_view(),
          name='unread-message-count'),
+    path('listing/<int:listing_id>/messages/',
+         views.ListingIncomingMessages.as_view(),
+         name='listing-incoming-messages'),
 ]
