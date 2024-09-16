@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, status, serializers
+from django.db.models import Count
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -119,7 +120,8 @@ class ListingIncomingMessages(generics.ListAPIView):
         try:
             queryset = self.get_queryset()
             if not queryset.exists():
-                if Listing.objects.filter(pk=self.kwargs['listing_id']).exists():
+                id = self.kwargs['listing_id']
+                if Listing.objects.filter(pk=id).exists():
                     return Response({"message": "No conversations found."},
                                     status=status.HTTP_200_OK)
                 else:
@@ -164,3 +166,22 @@ class MarkMessagesAsRead(generics.GenericAPIView):
         messages.update(is_read=True)
         return Response({"status": "Messages marked as read"},
                         status=status.HTTP_200_OK)
+
+
+class ConversationUnreadCounts(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        unread_counts = (
+            Message.objects.filter(
+                conversation__participants=request.user,
+                is_read=False
+            )
+            .exclude(sender=request.user)
+            .values('conversation')
+            .annotate(unread_count=Count('id'))
+        )
+
+        unread_dict = {item['conversation']: item['unread_count']
+                       for item in unread_counts}
+        return Response(unread_dict)
