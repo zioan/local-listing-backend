@@ -114,6 +114,32 @@ class ListingViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class ListingStatusUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            listing = Listing.objects.get(pk=pk)
+        except Listing.DoesNotExist:
+            return Response({"error": "Listing not found"},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if listing.user != request.user:
+            return Response({"error": "You don't have permissions"},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        new_status = request.data.get('status')
+        if not new_status:
+            return Response({"error": "Status is required"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        listing.status = new_status
+        listing.save()
+
+        serializer = ListingSerializer(listing)
+        return Response(serializer.data)
+
+
 class CategoryList(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer

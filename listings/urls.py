@@ -8,6 +8,9 @@ router.register(r'listings', views.ListingViewSet)
 urlpatterns = [
     # Router URLs (for ListingViewSet)
     path('', include(router.urls)),
+    path('listings/<int:pk>/update-status/',
+         views.ListingStatusUpdateView.as_view(),
+         name='listing-status-update'),
 
     # Category URLs
     path('categories/', views.CategoryList.as_view(), name='category-list'),
