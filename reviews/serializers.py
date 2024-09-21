@@ -20,7 +20,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request_user = self.context['request'].user
-        logged_in_user = self.context['view'].kwargs['user_id']
-        if request_user == logged_in_user:
-            raise serializers.ValidationError("You cannot review yourself.")
+        if 'view' in self.context and hasattr(self.context['view'], 'kwargs'):
+            user_id = self.context['view'].kwargs.get('user_id')
+            if user_id:
+                logged_in_user = User.objects.get(id=user_id)
+                if request_user == logged_in_user:
+                    raise serializers.ValidationError(
+                        "You cannot review yourself.")
         return data

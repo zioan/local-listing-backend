@@ -71,10 +71,19 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
             instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
         return Response(serializer.data)
 
     def perform_update(self, serializer):
-        serializer.save(reviewer=self.request.user)
+        serializer.save()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class ReviewerReviewDetail(generics.RetrieveAPIView):
