@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, serializers, status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from .models import Review
@@ -15,25 +15,37 @@ class ReviewList(generics.ListCreateAPIView):
         reviewed_user_id = self.kwargs['user_id']
         return Review.objects.filter(reviewed_user_id=reviewed_user_id)
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
         reviewed_user_id = self.kwargs['user_id']
         reviewed_user = User.objects.filter(id=reviewed_user_id).first()
-        if not reviewed_user:
-            raise serializers.ValidationError(
-                {"reviewed_user": "User not found"})
 
-        # Check if a review already exists
+        if not reviewed_user:
+            return Response({"reviewed_user": ["User not found"]},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if reviewed_user == request.user:
+            return Response({"reviewed_user": ["You cannot review yourself"]},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
         existing_review = Review.objects.filter(
-            reviewer=self.request.user, reviewed_user=reviewed_user).first()
+            reviewer=request.user, reviewed_user=reviewed_user).first()
+
         if existing_review:
-            # Update existing review
             existing_review.rating = serializer.validated_data['rating']
             existing_review.content = serializer.validated_data['content']
             existing_review.save()
+            return Response(ReviewSerializer(existing_review).data,
+                            status=status.HTTP_200_OK)
         else:
-            # Create new review
-            serializer.save(reviewer=self.request.user,
-                            reviewed_user=reviewed_user)
+            review = serializer.save(
+                reviewer=request.user, reviewed_user=reviewed_user)
+            return Response(ReviewSerializer(review).data,
+                            status=status.HTTP_201_CREATED)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
