@@ -1,7 +1,8 @@
-from rest_framework import generics, permissions, serializers
+from rest_framework import generics, permissions, serializers, status
+from rest_framework.response import Response
+from django.contrib.auth import get_user_model
 from .models import Review
 from .serializers import ReviewSerializer
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -50,3 +51,34 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
         if obj.reviewer != self.request.user:
             self.permission_denied(self.request)
         return obj
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        serializer.save(reviewer=self.request.user)
+
+
+class ReviewerReviewDetail(generics.RetrieveAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        reviewed_user_id = self.kwargs['user_id']
+        reviewer_id = self.kwargs['reviewer_id']
+        review = Review.objects.filter(
+            reviewed_user_id=reviewed_user_id, reviewer_id=reviewer_id).first()
+        return review
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
