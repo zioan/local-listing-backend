@@ -4,7 +4,8 @@ from .views import (
     UserRegistrationView,
     UserLoginView,
     UserProfileView,
-    UserLogoutView
+    UserLogoutView,
+    ChangePasswordView
 )
 
 urlpatterns = [
@@ -13,4 +14,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('logout/', UserLogoutView.as_view(), name='logout'),
+    path('change-password/', ChangePasswordView.as_view(),
+         name='change-password'),
 ]
