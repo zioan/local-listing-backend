@@ -50,3 +50,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'email', 'username', 'street', 'zip', 'city')
         read_only_fields = ('id', 'email')
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.UUIDField()
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value

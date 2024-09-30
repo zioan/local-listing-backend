@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils import timezone
+import uuid
 
 
 class CustomUserManager(BaseUserManager):
@@ -33,6 +34,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    password_reset_token = models.UUIDField(
+        default=uuid.uuid4, editable=False, null=True, blank=True)
 
     objects = CustomUserManager()
 
