@@ -1,3 +1,5 @@
+import uuid
+from .utils import send_password_reset_email
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,8 +17,6 @@ from .serializers import (
     PasswordResetConfirmSerializer
 )
 
-from .utils import send_password_reset_email
-import uuid
 
 User = get_user_model()
 
@@ -26,14 +26,15 @@ class UserRegistrationView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "user": UserProfileSerializer(user).data,
-            "refresh": str(refresh),
-            "access": str(refresh.access_token)
-        }, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            user = serializer.save()
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "user": UserProfileSerializer(user).data,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLoginView(APIView):
