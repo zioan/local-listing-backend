@@ -3,6 +3,12 @@ from .models import Listing
 
 
 class ListingFilter(filters.FilterSet):
+    """
+    FilterSet for the Listing model.
+
+    Provides filtering capabilities for listing attributes, allowing 
+    users to filter listings based on various criteria.
+    """
     min_price = filters.NumberFilter(field_name="price", lookup_expr='gte')
     max_price = filters.NumberFilter(field_name="price", lookup_expr='lte')
     category = filters.NumberFilter(field_name="category__id")
@@ -20,5 +26,7 @@ class ListingFilter(filters.FilterSet):
 
     class Meta:
         model = Listing
-        fields = ['min_price', 'max_price', 'category', 'subcategory',
-                  'condition', 'delivery_option', 'listing_type', 'location']
+        fields = [
+            'min_price', 'max_price', 'category', 'subcategory',
+            'condition', 'delivery_option', 'listing_type', 'location'
+        ]
