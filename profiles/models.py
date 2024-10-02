@@ -7,8 +7,10 @@ from django.db.models import Avg
 
 class Profile(models.Model):
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name='profile')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=100, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -18,6 +20,7 @@ class Profile(models.Model):
     num_ratings = models.PositiveIntegerField(default=0)
 
     def update_listing_counts(self):
+        """Update the total and active listings for the user profile."""
         self.total_listings = self.user.listings.count()
         self.active_listings = self.user.listings.filter(
             is_active=True).count()
@@ -25,18 +28,26 @@ class Profile(models.Model):
 
     @property
     def average_rating(self):
-        return self.user.reviews_received.aggregate(Avg('rating'))['rating__avg'] or 0
+        """Calculate the average rating from reviews received by the user."""
+        average_rating = (
+            self.user.reviews_received
+            .aggregate(Avg('rating'))['rating__avg'] or 0
+        )
+        return average_rating
 
     def __str__(self):
+        """Return a string representation of the profile."""
         return f"{self.user.username}'s profile"
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
+    """Create a profile automatically when a user is created."""
     if created:
         Profile.objects.create(user=instance)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def save_user_profile(sender, instance, **kwargs):
+    """Save the profile automatically when the user is saved."""
     instance.profile.save()
