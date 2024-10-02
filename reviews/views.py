@@ -8,14 +8,18 @@ User = get_user_model()
 
 
 class ReviewList(generics.ListCreateAPIView):
+    """View for listing and creating reviews."""
+
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        """Return reviews for the specified reviewed user."""
         reviewed_user_id = self.kwargs['user_id']
         return Review.objects.filter(reviewed_user_id=reviewed_user_id)
 
     def create(self, request, *args, **kwargs):
+        """Create a new review or update an existing one."""
         reviewed_user_id = self.kwargs['user_id']
         reviewed_user = User.objects.filter(id=reviewed_user_id).first()
 
@@ -48,23 +52,29 @@ class ReviewList(generics.ListCreateAPIView):
                             status=status.HTTP_201_CREATED)
 
     def get_serializer_context(self):
+        """Return the context for the serializer."""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
 
 
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    """View for retrieving, updating, and deleting a review."""
+
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        """Return the review object, ensuring the reviewer
+        is the current user."""
         obj = super().get_object()
         if obj.reviewer != self.request.user:
             self.permission_denied(self.request)
         return obj
 
     def update(self, request, *args, **kwargs):
+        """Update the specified review."""
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(
@@ -78,19 +88,25 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
     def perform_update(self, serializer):
+        """Perform the actual update of the review."""
         serializer.save()
 
     def get_serializer_context(self):
+        """Return the context for the serializer."""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
 
 
 class ReviewerReviewDetail(generics.RetrieveAPIView):
+    """View for retrieving a specific review by reviewer and reviewed user."""
+
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        """Return the review object for the specified reviewer
+        and reviewed user."""
         reviewed_user_id = self.kwargs['user_id']
         reviewer_id = self.kwargs['reviewer_id']
         review = Review.objects.filter(
@@ -98,6 +114,7 @@ class ReviewerReviewDetail(generics.RetrieveAPIView):
         return review
 
     def retrieve(self, request, *args, **kwargs):
+        """Retrieve the review, returning 204 if not found."""
         instance = self.get_object()
         if not instance:
             return Response(status=status.HTTP_204_NO_CONTENT)
