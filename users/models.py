@@ -9,7 +9,30 @@ import uuid
 
 
 class CustomUserManager(BaseUserManager):
+    """
+    Custom manager for the CustomUser model.
+
+    Provides helper methods to create regular users and superusers.
+    It normalizes the email, sets the password, and handles extra fields.
+    """
+
     def create_user(self, email, username, password=None, **extra_fields):
+        """
+        Create and return a regular user with an email, username, and password.
+
+        Raises:
+            ValueError: If no email is provided.
+
+        Args:
+            email (str): User's email address.
+            username (str): User's chosen username.
+            password (str): User's password (optional).
+            **extra_fields: Additional fields to be included
+            in the user instance.
+
+        Returns:
+            CustomUser: The created user instance.
+        """
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
@@ -19,6 +42,20 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, username, password=None, **extra_fields):
+        """
+        Create and return a superuser with is_staff and
+        is_superuser set to True.
+
+        Args:
+            email (str): Superuser's email address.
+            username (str): Superuser's username.
+            password (str): Superuser's password.
+            **extra_fields: Additional fields to be included
+            in the user instance.
+
+        Returns:
+            CustomUser: The created superuser instance.
+        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -26,6 +63,21 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    """
+    Custom user model extending Django's AbstractBaseUser and PermissionsMixin.
+
+    Attributes:
+        email (str): The user's unique email address.
+        username (str): The user's unique username.
+        street (str): The user's street address (optional).
+        zip (str): The user's zip/postal code (optional).
+        city (str): The user's city (optional).
+        is_active (bool): Whether the user's account is active.
+        is_staff (bool): Whether the user has staff privileges.
+        date_joined (datetime): The date the user joined.
+        password_reset_token (UUID): Token for password reset functionality.
+    """
+
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
     street = models.CharField(max_length=255, blank=True)
@@ -35,10 +87,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     password_reset_token = models.UUIDField(
-        default=uuid.uuid4, editable=False, null=True, blank=True)
+        default=uuid.uuid4, editable=False, null=True, blank=True
+    )
 
+    # Custom user manager
     objects = CustomUserManager()
 
+    # Use email for login instead of username
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 

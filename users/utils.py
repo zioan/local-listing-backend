@@ -4,6 +4,24 @@ from textwrap import dedent
 
 
 def send_password_reset_email(user, reset_token):
+    """
+    Sends a password reset email to the user.
+
+    This function generates an email containing a link that the user can
+    click to reset their password. The email includes both an HTML and
+    plain text version for compatibility with various email clients.
+
+    Args:
+        user: The user object for whom the password reset was requested.
+        reset_token: A unique token used to identify
+        the password reset request.
+
+    The email contains:
+    - Subject: "Password Reset Request - Local Listing"
+    - HTML and plain text message formats
+    - A reset link that directs the user to reset their password
+    """
+
     subject = 'Password Reset Request - Local Listing'
     reset_url = f"{settings.FRONTEND_URL}/reset-password/{reset_token}"
 

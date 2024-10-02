@@ -17,14 +17,26 @@ from .serializers import (
     PasswordResetConfirmSerializer
 )
 
-
 User = get_user_model()
 
 
 class UserRegistrationView(generics.CreateAPIView):
+    """
+    API view for registering a new user.
+
+    This view allows new users to create an account by providing their email,
+    username, and password. Upon successful registration, a JWT access and
+    refresh token are returned.
+
+    Methods:
+        create: Registers the user and returns authentication tokens.
+    """
     serializer_class = UserRegistrationSerializer
 
     def create(self, request, *args, **kwargs):
+        """
+        Handle user registration and return JWT tokens if successful.
+        """
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -38,7 +50,21 @@ class UserRegistrationView(generics.CreateAPIView):
 
 
 class UserLoginView(APIView):
+    """
+    API view for logging in users.
+
+    This view allows users to authenticate by providing their email
+    and password.
+    On successful login, a JWT access and refresh token are returned.
+
+    Methods:
+        post: Authenticates the user and returns JWT tokens.
+    """
+
     def post(self, request, *args, **kwargs):
+        """
+        Handle user login and return JWT tokens.
+        """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -52,17 +78,40 @@ class UserLoginView(APIView):
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
+    """
+    API view for retrieving and updating the user's profile.
+
+    Users can retrieve or update their profile information such as username,
+    email, and address.
+
+    Methods:
+        get_object: Retrieves the current logged-in user's profile.
+    """
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
+        """
+        Get the currently authenticated user's profile.
+        """
         return self.request.user
 
 
 class UserLogoutView(APIView):
+    """
+    API view for logging out users.
+
+    This view invalidates the user's refresh token to log them out securely.
+
+    Methods:
+        post: Logs out the user by blacklisting the refresh token.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """
+        Blacklist the refresh token to log the user out.
+        """
         try:
             refresh_token = request.data.get("refresh_token")
             if not refresh_token:
@@ -90,9 +139,21 @@ class UserLogoutView(APIView):
 
 
 class ChangePasswordView(APIView):
+    """
+    API view for changing the user's password.
+
+    This view allows authenticated users to update their password by providing
+    the current password and a new password.
+
+    Methods:
+        post: Changes the user's password.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """
+        Handle password change request.
+        """
         user = request.user
         current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
@@ -114,7 +175,21 @@ class ChangePasswordView(APIView):
 
 
 class PasswordResetRequestView(APIView):
+    """
+    API view for requesting a password reset.
+
+    This view allows users to request a password reset by providing
+    their email.
+    An email with a reset token is sent if the user exists.
+
+    Methods:
+        post: Sends a password reset email with a unique token.
+    """
+
     def post(self, request):
+        """
+        Handle password reset request and send email with reset token.
+        """
         serializer = PasswordResetRequestSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
@@ -138,7 +213,21 @@ class PasswordResetRequestView(APIView):
 
 
 class PasswordResetConfirmView(APIView):
+    """
+    API view for confirming a password reset.
+
+    This view allows users to reset their password by providing a valid
+    reset token and a new password.
+
+    Methods:
+        post: Confirms the password reset by validating the token and setting a
+              new password.
+    """
+
     def post(self, request):
+        """
+        Handle password reset confirmation and update the user's password.
+        """
         serializer = PasswordResetConfirmSerializer(data=request.data)
         if serializer.is_valid():
             token = serializer.validated_data['token']
