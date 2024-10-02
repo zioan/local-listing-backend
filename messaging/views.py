@@ -116,9 +116,7 @@ class MessageListCreate(generics.ListCreateAPIView):
         conversation = get_object_or_404(Conversation, pk=conversation_id)
 
         if self.request.user not in conversation.participants.all():
-            raise PermissionDenied(
-                "You are not a participant in this conversation.")
-
+            return Message.objects.none()
         return Message.objects.filter(conversation_id=conversation_id)
 
     def perform_create(self, serializer):
@@ -127,7 +125,7 @@ class MessageListCreate(generics.ListCreateAPIView):
         conversation = get_object_or_404(Conversation, pk=conversation_id)
 
         if self.request.user not in conversation.participants.all():
-            raise PermissionDenied(
+            raise permissions.PermissionDenied(
                 "You are not a participant in this conversation.")
 
         serializer.save(sender=self.request.user, conversation=conversation)
