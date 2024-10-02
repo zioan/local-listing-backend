@@ -17,6 +17,7 @@ from datetime import timedelta
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+import sys
 
 # Load environment variables
 if os.path.exists("env.py"):
@@ -181,9 +182,19 @@ WSGI_APPLICATION = "locallisting.wsgi.application"
 
 
 # Database
-DATABASES = {
-    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-}
+if 'test' in sys.argv or 'test_coverage' in sys.argv:
+    # Use SQLite for tests
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
+        }
+    }
+else:
+    # Production and development database
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
 
 
 # Password validation
