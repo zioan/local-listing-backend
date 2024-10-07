@@ -243,3 +243,23 @@ class PasswordResetConfirmView(APIView):
                 return Response({"error": "Invalid token."},
                                 status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteAccountView(APIView):
+    """
+    Delete the authenticated user's account.
+
+    Args:
+        request (Request): The HTTP request object containing user information.
+
+    Returns:
+        Response: A response indicating successful account deletion
+        with HTTP 200 status.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "Account deleted successfully."},
+                        status=status.HTTP_200_OK)
