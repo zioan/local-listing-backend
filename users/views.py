@@ -1,5 +1,4 @@
 import uuid
-from .utils import send_password_reset_email
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -16,6 +15,7 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer
 )
+from .utils import send_password_reset_email
 
 User = get_user_model()
 
@@ -95,6 +95,13 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         Get the currently authenticated user's profile.
         """
         return self.request.user
+
+    def perform_update(self, serializer):
+        """
+        Update the user's profile and save the changes.
+        """
+        user = serializer.save()
+        user.profile.save()
 
 
 class UserLogoutView(APIView):

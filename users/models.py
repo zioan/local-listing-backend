@@ -6,6 +6,9 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.utils import timezone
 import uuid
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from profiles.models import Profile
 
 
 class CustomUserManager(BaseUserManager):
@@ -83,6 +86,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     street = models.CharField(max_length=255, blank=True)
     zip = models.CharField(max_length=20, blank=True)
     city = models.CharField(max_length=100, blank=True)
+    bio = models.TextField(max_length=500, blank=True,
+                           default="No bio for this user.")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
@@ -116,3 +121,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         related_name='custom_user_set',
         related_query_name='custom_user',
     )
+
+
+@receiver(post_save, sender=CustomUser)
+def update_user_profile(sender, instance, created, **kwargs):
+    """
+    Update public user profile when user data is saved.
+    """
+    if created:
+        Profile.objects.create(user=instance)
+
+    profile = instance.profile
+    profile.bio = instance.bio
+    profile.street = instance.street
+    profile.zip = instance.zip
+    profile.city = instance.city
+    profile.save()
