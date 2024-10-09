@@ -16,6 +16,7 @@ from .serializers import (
     PasswordResetConfirmSerializer
 )
 from .utils import send_password_reset_email
+from profiles.models import Profile
 
 User = get_user_model()
 
@@ -35,11 +36,19 @@ class UserRegistrationView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         """
-        Handle user registration and return JWT tokens if successful.
+        Handle user registration, public profile,
+        and return JWT tokens if successful.
         """
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+
+            # Create the user's profile
+            Profile.objects.create(
+                user=user,
+                bio=user.bio,
+            )
+
             refresh = RefreshToken.for_user(user)
             return Response({
                 "user": UserProfileSerializer(user).data,
