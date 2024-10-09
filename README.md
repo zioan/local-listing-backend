@@ -77,9 +77,8 @@ Note: In order to test this features, the email account used for account registr
 - **Tokens and Refresh Tokens**: The API uses JWT tokens for authentication and refresh tokens to manage user sessions securely.
 - **Multi-Image Upload**: Users can upload multiple images for a single listing, giving more context and details to potential buyers.
 - **Cloudinary Integration**: Listings' images are handled using Cloudinary, providing efficient image storage, optimization, and delivery.
-- **Responsive Design**: The API is designed to support both web and mobile clients, ensuring that data is accessible across devices.
 - **Location-Based Filtering**: Users can filter listings based on location to find items near them. This feature can be extended to include distance-based filtering in future iterations.
-- **Statistics and Analytics**: Listings have view counts, and admins can access basic analytics to track platform usage and popular categories.
+- **Statistics**: Listings have view counts.
 - **Pagination**: The listings endpoint supports pagination to manage large datasets efficiently. Unfortunately, due to time constraints, the pagination feature is not yet implemented in the frontend client, but it was tested and works as expected in the backend.
 
 ## Technologies Used
@@ -97,7 +96,7 @@ Note: In order to test this features, the email account used for account registr
 
 ### Databases
 
-- **PostgreSQL**: Used as the primary database for storing all application data, including user information, listings, reviews, and messages.
+- **PostgreSQL**: Used as the primary database for storing all application data, including user information, listings, reviews, and messages. The database is provided by Code Institute.
 
 ### Other Tools & Services
 
@@ -194,12 +193,11 @@ The following is a summary of key API endpoints provided by the Local Listing Ba
 ## Agile Methodology
 
 The development of the Local Listing Backend API followed an **Agile methodology**, specifically using **Kanban** for task management.
+Kanban board can be accessed [here](https://github.com/users/zioan/projects/6).
 
-- **Kanban Board**: A Kanban board was used to manage tasks, allowing for better visualization of progress and bottlenecks. Each task was categorized as "To Do", "In Progress", "In Review", or "Done", making it easy to track the development flow.
+- **Kanban Board (GitHub Project Board)**: A Kanban board was used to manage tasks (issues), allowing for better visualization of progress and bottlenecks. Each task was categorized as "To Do", "In Progress", "In Review", or "Done", making it easy to track the development flow.
 
 - **User Stories**: User stories were defined to capture the requirements from an end-user perspective. Each feature, such as user registration, listing creation, messaging, and review management, was documented as a user story to ensure it delivered value to the user. User stories were prioritized based on their impact and complexity using MOSCOW prioritization.
-
-- **GitHub Project Board**: A GitHub project board was used to track issues and user stories. Tasks were created as issues, and the Kanban board was employed to manage their status. This helped ensure that development remained focused on delivering value in small, manageable increments.
 
 ## Version Control
 
@@ -229,10 +227,6 @@ Throughout the development process, Git was used for version control, with Visua
 5. **Remote Synchronization**:
    - Regularly used **`git pull`** to sync the local repository with the latest changes on the remote GitHub repository. This practice helped avoid conflicts after modifying the project board or issues.
 
-### GitHub Project Management
-
-- **GitHub Project Board**: A Kanban board on GitHub was used to track user stories, tasks, and issues. This helped ensure smooth management and prioritization of features throughout the project. Due to the nature of this project, the board was shared with the frontend.
-
 By leveraging Git and GitHub's integration with VS Code, a clean and understandable version history was maintained, even while managing the complex architecture of the Django REST API project.
 
 ## Deployment
@@ -249,11 +243,6 @@ The Local Listing Backend API was deployed using **Heroku**, a cloud Platform-as
 2. **Procfile and Gunicorn**:
 
    - A **Procfile** was added to the project to specify the command that Heroku should use to start the application. This included using **Gunicorn** as the WSGI HTTP server.
-   - The **Procfile** content was as follows:
-     ```
-     web: gunicorn project_name.wsgi --log-file -
-     ```
-     where `project_name` refers to the name of the Django project.
 
 3. **Dependencies**:
 
@@ -338,18 +327,25 @@ To set up the Local Listing Backend API locally, follow these instructions to en
 4. **Environment Variables**
 
    - Create a **`.env`** file in the root of your project to store environment variables. Add the following variables:
+
      ```
      SECRET_KEY=your_secret_key
      DEBUG=True
      DATABASE_URL=your_postgresql_database_url
+     CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+     CLOUDINARY_API_KEY=your_cloudinary_api_key
+     CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+     SENDGRID_API_KEY=your_sendgrid_api_key
+     DEFAULT_FROM_EMAIL=your_default_from_email
+     FRONTEND_URL=your_frontend_url
      ```
 
 5. **Database Migration**
 
-   - Apply migrations to set up the database:
-     ```
-     python manage.py migrate
-     ```
+- Apply migrations to set up the database:
+  ```
+  python manage.py migrate
+  ```
 
 6. **Create a Superuser**
 
@@ -390,7 +386,6 @@ Testing was a crucial aspect of the development process for ensuring the robustn
 
 - **Django's Test Framework**: Used to create and run unit tests for the various components of the application.
 - **Postman**: Used extensively for manual testing of the API endpoints during development.
-- **Coverage.py**: Used to measure the test coverage of the application, ensuring that all important parts of the code were tested.
 
 ### Types of Tests
 
@@ -413,6 +408,95 @@ Testing was a crucial aspect of the development process for ensuring the robustn
   ```
   The result of the tests can be visualized in the following screenshot:
 
+![Test Results](./docs/assets/tests.png)
+
+#### Listings App Tests
+
+The tests for the listings app cover the core functionality of categories, subcategories, listings, serializers, and API views. These tests ensure that the models and API endpoints function as expected and data is handled correctly.
+
+| Test Name                            | Description                                          | Assertion                                                             |
+| ------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------- |
+| `test_category_creation`             | Tests the creation of a Category instance            | Verifies the correct category name and string representation          |
+| `test_subcategory_creation`          | Tests the creation of a Subcategory instance         | Verifies subcategory attributes and relationships                     |
+| `test_listing_creation`              | Tests the creation of a Listing instance             | Verifies listing attributes and relationships                         |
+| `test_contains_expected_fields`      | Tests the CategorySerializer for expected fields     | Ensures the expected fields are in the serialized data                |
+| `test_contains_expected_fields`      | Tests the SubcategorySerializer for expected fields  | Ensures the expected fields are in the serialized data                |
+| `test_contains_expected_fields`      | Tests the ListingSerializer for expected fields      | Ensures the expected fields are in the serialized data                |
+| `test_create_valid_listing`          | Tests creating a new listing with valid data         | Verifies a valid listing is created successfully                      |
+| `test_create_invalid_listing`        | Tests creating a new listing with invalid data       | Verifies that creating a listing with invalid data returns 400 error  |
+| `test_retrieve_listing`              | Tests retrieving a specific listing                  | Verifies that a listing is retrieved correctly                        |
+| `test_update_listing`                | Tests updating an existing listing                   | Verifies a listing is updated successfully with valid data            |
+| `test_delete_listing`                | Tests deleting an existing listing                   | Verifies a listing is deleted successfully                            |
+| `test_get_all_categories`            | Tests retrieving all categories                      | Ensures that all categories are returned successfully                 |
+| `test_get_all_subcategories`         | Tests retrieving all subcategories                   | Ensures that all subcategories are returned successfully              |
+| `test_get_subcategories_by_category` | Tests retrieving subcategories by category           | Verifies correct subcategories are returned for a specific category   |
+| `test_get_my_listings`               | Tests retrieving listings for the authenticated user | Ensures the authenticated user's listings are returned                |
+| `test_get_favorite_listings`         | Tests retrieving favorite listings                   | Ensures the authenticated user's favorite listings are returned       |
+| `test_toggle_favorite`               | Tests toggling the favorite status of a listing      | Verifies that a listing can be favorited and unfavorited successfully |
+
+#### Messaging App Tests
+
+The messaging app tests cover the core functionality of conversations, messages, and related API views. These tests ensure that conversations and messages are correctly created, retrieved, and managed through the API.
+
+| Test Name                         | Description                                                       | Assertion                                                     |
+| --------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------- |
+| `test_conversation_creation`      | Tests the creation of a Conversation instance                     | Verifies the correct listing and participants are associated  |
+| `test_message_creation`           | Tests the creation of a Message instance                          | Verifies the correct conversation, sender, and content        |
+| `test_conversation_serializer`    | Tests the ConversationSerializer output structure                 | Ensures the serialized data contains the expected fields      |
+| `test_message_serializer`         | Tests the MessageSerializer output structure                      | Ensures the serialized data contains the expected fields      |
+| `test_conversation_list_create`   | Tests the GET and POST methods of the ConversationListCreate view | Verifies correct retrieval and creation of conversations      |
+| `test_message_list_create`        | Tests the GET and POST methods of the MessageListCreate view      | Verifies correct retrieval and creation of messages           |
+| `test_mark_messages_as_read`      | Tests marking messages as read                                    | Ensures the selected messages are marked as read successfully |
+| `test_unread_message_count`       | Tests the unread message count API endpoint                       | Verifies the correct number of unread messages is returned    |
+| `test_conversation_unread_counts` | Tests the unread message count per conversation endpoint          | Verifies correct unread counts for each conversation          |
+| `test_listing_incoming_messages`  | Tests retrieving incoming messages for a specific listing         | Ensures correct incoming messages for a listing are retrieved |
+
+#### Profiles App Tests
+
+The profile app tests cover the core functionality of profile creation, updating, and retrieval, as well as the related API views and serializers. These tests ensure that profiles are correctly handled in the system and that the necessary fields are serialized properly.
+
+| Test Name                         | Description                                                      | Assertion                                                              |
+| --------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `test_profile_creation`           | Tests the automatic creation of a profile when a user is created | Verifies that a profile is created and linked to the user              |
+| `test_profile_str_representation` | Tests the string representation of a Profile instance            | Ensures the correct string format for the profile                      |
+| `test_update_listing_counts`      | Tests the update_listing_counts method of the Profile model      | Verifies the correct counting of total and active listings             |
+| `test_profile_detail_view`        | Tests the ProfileDetailView for authenticated users              | Ensures the profile data is returned for the authenticated user        |
+| `test_public_profile_view`        | Tests the PublicProfileView                                      | Verifies the correct retrieval of a public profile by username         |
+| `test_user_listings_view`         | Tests the UserListingsView                                       | Ensures the correct number of listings is returned for a specific user |
+| `test_profile_serializer`         | Tests the ProfileSerializer                                      | Verifies the serialized data includes the expected profile fields      |
+| `test_private_profile_serializer` | Tests the PrivateProfileSerializer                               | Verifies the serialized data includes sensitive fields like email      |
+
+#### Reviews App Tests
+
+The review app tests cover the core functionality of creating, updating, deleting, and retrieving reviews, as well as the related API views and serializers. These tests ensure that reviews function correctly and that the necessary fields are properly serialized.
+
+| Test Name                                         | Description                                          | Assertion                                                                  |
+| ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
+| `test_review_creation`                            | Tests the creation of a Review instance              | Verifies the correct attributes (reviewer, reviewed user, rating, content) |
+| `test_review_str_representation`                  | Tests the string representation of a Review instance | Ensures the correct string format for the review                           |
+| `test_create_review`                              | Tests creating a new review via API                  | Verifies that a review is created successfully                             |
+| `test_list_reviews`                               | Tests listing reviews for a user                     | Ensures that all reviews for the user are returned                         |
+| `test_update_review`                              | Tests updating an existing review                    | Verifies that the review is updated successfully                           |
+| `test_delete_review`                              | Tests deleting a review                              | Ensures the review is deleted successfully                                 |
+| `test_review_serializer_contains_expected_fields` | Tests the ReviewSerializer for expected fields       | Ensures the serialized data contains the expected fields                   |
+| `test_review_serializer_content`                  | Tests the content of the ReviewSerializer            | Verifies that the Review instance is serialized with correct values        |
+
+#### User App Tests
+
+The user app tests cover the core functionality of user creation, profile management, and authentication, as well as the related API views and serializers. These tests ensure that users can be created, updated, logged in, logged out, and managed correctly.
+
+| Test Name                                       | Description                                              | Assertion                                                            |
+| ----------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `test_user_creation`                            | Tests creating a user with correct attributes            | Verifies that a user is created successfully with the correct data   |
+| `test_user_str_representation`                  | Tests the string representation of a CustomUser instance | Ensures the correct string format for the user                       |
+| `test_user_registration`                        | Tests registering a new user via API                     | Verifies that a new user is registered successfully                  |
+| `test_user_profile_retrieval`                   | Tests retrieving the authenticated user's profile        | Ensures the correct profile data is returned                         |
+| `test_user_profile_update`                      | Tests updating the authenticated user's profile          | Verifies that the user's profile is updated successfully             |
+| `test_user_logout`                              | Tests logging out the user                               | Ensures the user is logged out and token is blacklisted successfully |
+| `test_change_password`                          | Tests changing the user's password                       | Verifies that the user's password is changed successfully            |
+| `test_user_serializer_contains_expected_fields` | Tests the UserProfileSerializer for expected fields      | Ensures the serialized data contains the expected profile fields     |
+| `test_user_serializer_content`                  | Tests the content of the UserProfileSerializer           | Verifies that the User instance is serialized with correct values    |
+
 ### Manual Testing
 
 - **Postman** was used to manually test each API endpoint during development to confirm proper functionality.
@@ -424,21 +508,26 @@ Testing the Local Listing Backend API involved a combination of unit and manual 
 
 ## Unsolved Issues and Bugs
 
-During the development and testing phases of the Local Listing Backend API, several issues were found and solved. Below is a summary of the known fixed issues and some improvements that could be made in future iterations. Due to time constraints, the issues listed as unsolved were not addressed in the current version.
+During the development and testing phases of the Local Listing Backend API, several issues were found and solved. Below is a summary of the known issues and some improvements that could be made in future iterations.
 
-### 1. Messaging System Delay
+### 1.Database Connection Consistency
+
+Database connection (provided by Code Institute) seems to be inconsistent from time to time, leading to occasional connection errors. Fortunately, the frontend client handles these errors gracefully, triggering a 500 error message to the user. Usually, refreshing the page resolves the problem and the issue is not persistent.
+This is a screen capture of the error message:
+
+![Database Connection Error](./docs/assets/database-connection-error.png)
+
+### 2. Messaging System Delay
 
 - **Issue**: There is a delay in real-time messaging updates between users. This may lead to users not seeing new messages immediately.
 - **Cause**: The delay is related to the polling interval set for retrieving new messages.
 - **Proposed Solution**: Future iterations could include integrating WebSockets to provide real-time messaging updates between users.
 
-### 2. Image Upload Timeout for Large Files
+### 3. Image Upload Timeout for Large Files
 
 - **Issue**: Uploading very large images (over 10MB) can sometimes result in a timeout error.
 - **Cause**: The issue is related to both the server’s upload size limit and the Cloudinary integration.
 - **Proposed Solution**: Future iterations could include client-side image resizing before upload or server-side chunked uploads to handle large files more efficiently.
-
-TODO: Add solved issues
 
 ## Future Features
 
@@ -505,22 +594,20 @@ The future features of the Local Listing Backend API are focused on improving th
 
 ## Credits
 
-The development of the Local Listing Backend API was made possible thanks to various tools, and resources, Below is a list of credits for code, media, and tools that were instrumental in building this project.
+The development of the Local Listing Backend API was made possible thanks to various tools, and resources. Below is a list of credits for code, media, and tools that were instrumental in building this project.
 
 A special thank to my mentor Spence, who provided valuable guidance and feedback throughout the development process.
 
-### Code and Packages
-
-- **Django**: The Django framework was used to build the backend API. The official documentation and community forums provided valuable support throughout the development process.
-- **Django REST Framework (DRF)**: Used for building the RESTful API. Special thanks to the DRF maintainers and contributors for providing a comprehensive and flexible toolkit.
-- **Cloudinary**: Integrated for handling media storage. The Cloudinary Python SDK and tutorials made media handling efficient and straightforward.
-- **SendGrid**: Used for sending password reset emails. The SendGrid API documentation and Python library were instrumental in setting up the email service.
-
-### Content and Inspiration
+### Code and Inspiration
 
 - **Code Institute Learning Materials**: The Django Full Stack Developer course provided the foundational knowledge and guidance for building the Local Listing Backend API.
 - **Python Documentation**: The Python documentation was a valuable resource for understanding the language features and best practices.
 - **Django Official Documentation**: The official documentation served as the primary resource for understanding Django’s capabilities and implementing best practices.
+- **Cloudinary**: Integrated for handling media storage. The Cloudinary Python SDK and tutorials made media handling efficient and straightforward.
+- **SendGrid**: Used for sending password reset emails. The SendGrid API documentation and Python library were instrumental in setting up the email service.
+- **Previous Coding Experiences**: Professional coding experiences in technologies like Laravel, Express.js, and Next.js provided a solid foundation for understanding backend development concepts, making Django implementation smoother.
+
+Note: The project codebase was developed from scratch, incrementally building features, with inspiration drawn from various online resources, tutorials, and documentation to ensure best practices and efficient implementation. No code was literally copied from external sources.
 
 ### Tools
 
