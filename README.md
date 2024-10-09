@@ -445,6 +445,12 @@ These steps will set up the Local Listing Backend API on your local machine, all
 
 Testing was a crucial aspect of the development process for ensuring the robustness and reliability of the Local Listing Backend API. The project used a combination of manual testing and automated testing frameworks to validate the functionality of the API endpoints and ensure that they performed as expected.
 
+### Python (PEP8) Validation
+
+Python code was validated using Black Formatter VS Code extension during development. All custom Python files were checked using the Code Institute PEP8 Validator as part of the final validation process. No errors or warnings were found in the codebase.
+
+![PEP8 Validation](./docs/assets/code-validation.png)
+
 ### Testing Tools
 
 - **Django's Test Framework**: Used to create and run unit tests for the various components of the application.
@@ -663,7 +669,7 @@ The future features of the Local Listing Backend API are focused on improving th
 
 The development of the Local Listing Backend API was made possible thanks to various tools, and resources. Below is a list of credits for code, media, and tools that were instrumental in building this project.
 
-A special thank to my mentor Spence, who provided valuable guidance and feedback throughout the development process.
+A special thank to my mentor Spencer Barriball, who provided valuable guidance and feedback throughout the development process.
 
 ### Code and Inspiration
 
