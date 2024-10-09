@@ -1,3 +1,53 @@
+# Local Listing Backend API
+
+## Table of Contents
+
+1. [Project Overview](#project-overview)
+   - [Purpose](#purpose)
+   - [Features](#features)
+   - [Objectives](#objectives)
+2. [Features](#features-1)
+
+   - [Key Features Summary](#key-features-summary)
+   - [Additional Features Summary](#additional-features-summary)
+
+3. [Technologies Used](#technologies-used)
+
+   - [Languages](#languages)
+   - [Frameworks & Libraries](#frameworks--libraries)
+   - [Databases](#databases)
+   - [Other Tools & Services](#other-tools--services)
+
+4. [Information Architecture](#information-architecture)
+
+   - [Database Schema (ERD Diagram)](#database-schema-erd-diagram)
+   - [Data Models Description](#data-models-description)
+
+5. [API Endpoints](#api-endpoints)
+
+6. [Agile Methodology](#agile-methodology)
+
+7. [Version Control](#version-control)
+
+   - [Tools and Workflow](#tools-and-workflow)
+
+8. [Deployment](#deployment)
+
+   - [Deployment Steps](#deployment-steps)
+
+9. [Installation and Local Setup](#installation-and-local-setup)
+
+   - [Prerequisites](#prerequisites)
+   - [Installation Steps](#installation-steps)
+
+10. [Testing](#testing)
+
+11. [Unsolved Issues and Bugs](#unsolved-issues-and-bugs)
+
+12. [Future Features](#future-features)
+
+13. [Credits](#credits)
+
 ## Project Overview
 
 The **Local Listing Backend API** is a Django-based REST API designed to provide backend services for the local listing platform. The API handles multiple aspects of the application, including user management, listings, messaging, reviews, and more. This backend is intended to serve as the main point of interaction for the React front-end client, providing endpoints to create, read, update, and delete resources, as well as manage user sessions and interactions.
@@ -106,9 +156,11 @@ Note: In order to test this features, the email account used for account registr
 - **Heroku**: Platform-as-a-service (PaaS) used for hosting and deploying the backend API.
 - **Postman**: Utilized during development for testing the API endpoints.
 
+[Back to top](#local-listing-backend-api)
+
 ## Information Architecture
 
-### Database Schema (ERD Diagram)
+### Database Schema
 
 The database schema consists of multiple interconnected models, each representing a key entity in the application. The primary models are **User**, **Listing**, **Category**, **Subcategory**, **Message**, **Review**, and **ListingImage**. The relationships between these models include:
 
@@ -127,6 +179,8 @@ The database schema consists of multiple interconnected models, each representin
 - **Message Model**: Contains `content`, `timestamp`, `sender`, and `listing` to support user-to-user communication regarding listings.
 - **Review Model**: Contains `rating`, `comment`, `user`, `listing`, and `created_at` to manage user feedback for listings.
 - **ListingImage Model**: Contains `listing`, `image`, and `created_at` fields, storing image URLs using Cloudinary integration.
+
+![ERD diagram](./docs/assets/erd-diagram.png)
 
 ### API Endpoints
 
@@ -187,8 +241,11 @@ The following is a summary of key API endpoints provided by the Local Listing Ba
    - **GET /api/listings/user/{username}/**: Retrieve all active listings for a specific user.
 
 7. **Favorite Listings Endpoints**
+
    - **GET /api/favorites/**: Retrieve all listings favorited by the authenticated user.
    - **POST /api/listings/{id}/favorite/**: Add or remove a listing from the user's favorites.
+
+[Back to top](#local-listing-backend-api)
 
 ## Agile Methodology
 
@@ -228,6 +285,8 @@ Throughout the development process, Git was used for version control, with Visua
    - Regularly used **`git pull`** to sync the local repository with the latest changes on the remote GitHub repository. This practice helped avoid conflicts after modifying the project board or issues.
 
 By leveraging Git and GitHub's integration with VS Code, a clean and understandable version history was maintained, even while managing the complex architecture of the Django REST API project.
+
+[Back to top](#local-listing-backend-api)
 
 ## Deployment
 
@@ -277,6 +336,8 @@ The Local Listing Backend API was deployed using **Heroku**, a cloud Platform-as
 ### Deployment Summary
 
 Deploying the API to Heroku allowed for a seamless and scalable deployment process, leveraging Heroku's managed services to handle the complexities of server setup. By using **Gunicorn**, **Whitenoise**, and **Code Institute Postgres Database**, the application was able to serve both dynamic content and static assets efficiently, providing a smooth user experience.
+
+[Back to top](#local-listing-backend-api)
 
 ## Installation and Local Setup
 
@@ -377,6 +438,8 @@ To set up the Local Listing Backend API locally, follow these instructions to en
 ### Summary
 
 These steps will set up the Local Listing Backend API on your local machine, allowing you to explore, modify, and test the application in a development environment. Ensure all configurations are set correctly to avoid issues during runtime.
+
+[Back to top](#local-listing-backend-api)
 
 ## Testing
 
@@ -529,6 +592,8 @@ This is a screen capture of the error message:
 - **Cause**: The issue is related to both the server’s upload size limit and the Cloudinary integration.
 - **Proposed Solution**: Future iterations could include client-side image resizing before upload or server-side chunked uploads to handle large files more efficiently.
 
+[Back to top](#local-listing-backend-api)
+
 ## Future Features
 
 To further enhance the Local Listing Backend API and provide an even better user experience, several features are planned for future development. These features aim to improve usability, increase engagement, and add new capabilities to the platform. Some of these features are already mentioned in the related sections.
@@ -592,6 +657,8 @@ To further enhance the Local Listing Backend API and provide an even better user
 
 The future features of the Local Listing Backend API are focused on improving the overall user experience, enhancing engagement, and making the platform more interactive and accessible. These planned upgrades will ensure the platform remains competitive and continues to meet the evolving needs of its user base.
 
+[Back to top](#local-listing-backend-api)
+
 ## Credits
 
 The development of the Local Listing Backend API was made possible thanks to various tools, and resources. Below is a list of credits for code, media, and tools that were instrumental in building this project.
@@ -615,3 +682,5 @@ Note: The project codebase was developed from scratch, incrementally building fe
 - **GitHub**: Used for version control and collaborative development.
 - **Postman**: Essential for testing API endpoints during the development cycle, ensuring that each feature functioned as intended.
 - **Heroku**: Provided the deployment platform for the API.
+
+[Back to top](#local-listing-backend-api)
