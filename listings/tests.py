@@ -6,6 +6,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from .models import Category, Subcategory, Listing
+from profiles.models import Profile
 from .serializers import (
     CategorySerializer,
     SubcategorySerializer,
@@ -62,8 +63,11 @@ class ListingModelTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com",
-            password="testpass123")
+            username="testuser",
+            email="test@example.com",
+            password="testpass123"
+        )
+        Profile.objects.create(user=self.user)
         self.category = Category.objects.create(name="Electronics")
         self.subcategory = Subcategory.objects.create(
             name="Smartphones", category=self.category)
@@ -141,8 +145,11 @@ class ListingSerializerTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com",
-            password="testpass123")
+            username="testuser",
+            email="test@example.com",
+            password="testpass123"
+        )
+        Profile.objects.create(user=self.user)
         self.category = Category.objects.create(name="Electronics")
         self.subcategory = Subcategory.objects.create(
             name="Smartphones", category=self.category)
@@ -182,8 +189,11 @@ class ListingViewSetTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com",
-            password="testpass123")
+            username="testuser",
+            email="test@example.com",
+            password="testpass123"
+        )
+        Profile.objects.create(user=self.user)
         self.category = Category.objects.create(name="Electronics")
         self.subcategory = Subcategory.objects.create(
             name="Smartphones", category=self.category)
@@ -341,8 +351,11 @@ class MyListingsViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com",
-            password="testpass123")
+            username="testuser",
+            email="test@example.com",
+            password="testpass123"
+        )
+        Profile.objects.create(user=self.user)
         self.category = Category.objects.create(name="Electronics")
         self.subcategory = Subcategory.objects.create(
             name="Smartphones", category=self.category)
@@ -385,8 +398,11 @@ class FavoriteListViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com",
-            password="testpass123")
+            username="testuser",
+            email="test@example.com",
+            password="testpass123"
+        )
+        Profile.objects.create(user=self.user)
         self.category = Category.objects.create(name="Electronics")
         self.subcategory = Subcategory.objects.create(
             name="Smartphones", category=self.category)
@@ -433,8 +449,11 @@ class FavoriteToggleViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com",
-            password="testpass123")
+            username="testuser",
+            email="test@example.com",
+            password="testpass123"
+        )
+        Profile.objects.create(user=self.user)
         self.category = Category.objects.create(name="Electronics")
         self.subcategory = Subcategory.objects.create(
             name="Smartphones", category=self.category)

@@ -22,7 +22,7 @@ class ProfileModelTests(TestCase):
             email='testuser@example.com',
             password='testpass123'
         )
-        self.profile = self.user.profile
+        self.profile = Profile.objects.create(user=self.user)
 
     def test_profile_creation(self):
         """
@@ -65,7 +65,7 @@ class ProfileViewTests(TestCase):
             email='testuser@example.com',
             password='testpass123'
         )
-        self.profile = self.user.profile
+        Profile.objects.create(user=self.user)
 
     def test_profile_detail_view(self):
         """
@@ -113,7 +113,7 @@ class ProfileSerializerTests(TestCase):
             email='testuser@example.com',
             password='testpass123'
         )
-        self.profile = self.user.profile
+        self.profile = Profile.objects.create(user=self.user)
 
     def test_profile_serializer(self):
         """

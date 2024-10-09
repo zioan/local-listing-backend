@@ -4,6 +4,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserProfileSerializer
+from profiles.models import Profile
 
 User = get_user_model()
 
@@ -17,11 +18,14 @@ class UserModelTests(TestCase):
         """
         Set up test data.
         """
+        self.client = APIClient()
         self.user = User.objects.create_user(
             username='testuser',
             email='testuser@example.com',
             password='testpass123'
         )
+        Profile.objects.create(user=self.user)
+        self.client.force_authenticate(user=self.user)
 
     def test_user_creation(self):
         """
@@ -49,11 +53,13 @@ class UserViewTests(TestCase):
         Set up test data and API client.
         """
         self.client = APIClient()
+        self.client = APIClient()
         self.user = User.objects.create_user(
             username='testuser',
             email='testuser@example.com',
             password='testpass123'
         )
+        Profile.objects.create(user=self.user)
         self.client.force_authenticate(user=self.user)
 
     def test_user_registration(self):
@@ -136,11 +142,14 @@ class UserSerializerTests(TestCase):
         """
         Set up test data.
         """
+        self.client = APIClient()
         self.user = User.objects.create_user(
             username='testuser',
             email='testuser@example.com',
             password='testpass123'
         )
+        Profile.objects.create(user=self.user)
+        self.client.force_authenticate(user=self.user)
         self.serializer = UserProfileSerializer(instance=self.user)
 
     def test_user_serializer_contains_expected_fields(self):
@@ -149,7 +158,8 @@ class UserSerializerTests(TestCase):
         """
         data = self.serializer.data
         self.assertCountEqual(
-            data.keys(), ['id', 'email', 'username', 'street', 'zip', 'city'])
+            data.keys(),
+            ['id', 'email', 'username', 'street', 'zip', 'city', 'bio'])
 
     def test_user_serializer_content(self):
         """
