@@ -110,7 +110,7 @@ if os.environ.get('DEVELOPMENT') == 'True':
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
-        "https://listings-frontend-901f68be9063.herokuapp.com/",
+        "https://listings-frontend-901f68be9063.herokuapp.com",
         "https://listings.zioan.com",
     ]
 
